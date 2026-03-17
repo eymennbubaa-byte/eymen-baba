@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2 Oyuncu Oyunlar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .menu {
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .menu.hidden {
+            display: none;
+        }
+
+        .game-section {
+            display: none;
+            padding: 20px;
+        }
+
+        .game-section.active {
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        /* XOX Oyunu */
+        .scores {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-item h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .score-item .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .current-player {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8eef7;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #667eea;
+        }
+
+        .cell:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+            transform: scale(1.05);
+        }
+
+        .cell.x {
+            color: #667eea;
+        }
+
+        .cell.o {
+            color: #764ba2;
+        }
+
+        .cell.disabled {
+            cursor: not-allowed;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            min-height: 25px;
+        }
+
+        /* Taş Kağıt Makas */
+        .rps-container {
+            text-align: center;
+        }
+
+        .rps-scores {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .rps-score-item {
+            text-align: center;
+        }
+
+        .rps-score-item h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .rps-score-item .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .rps-turn {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8eef7;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .rps-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .rps-btn {
+            flex: 1;
+            padding: 16px;
+            font-size: 24px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .rps-btn:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+            transform: scale(1.05);
+        }
+
+        .rps-btn.selected {
+            border-color: #667eea;
+            background: #e8eef7;
+        }
+
+        .rps-result {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .rps-result-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .rps-choices {
+            font-size: 32px;
+            margin: 10px 0;
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .reset-btn {
+            background: #ff6b6b;
+            color: white;
+            padding: 12px 24px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .back-btn {
+            background: #999;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .winner-animation {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Oyun Zamanı</h1>
+            <p>2 Oyuncu Oyunları</p>
+        </div>
+
+        <!-- Menu -->
+        <div class="menu" id="menu">
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="startGame('xox')">
+                    ⭕ XOX (Tic Tac Toe)
+                </button>
+                <button class="btn btn-primary" onclick="startGame('rps')">
+                    ✋ Taş Kağıt Makas
+                </button>
+            </div>
+        </div>
+
+        <!-- XOX Oyunu -->
+        <div class="game-section" id="xoxGame">
+            <div class="scores">
+                <div class="score-item">
+                    <h3>Oyuncu 1 (X)</h3>
+                    <div class="score" id="player1Score">0</div>
+                </div>
+                <div class="score-item">
+                    <h3>Oyuncu 2 (O)</h3>
+                    <div class="score" id="player2Score">0</div>
+                </div>
+            </div>
+
+            <div class="current-player" id="currentPlayer">Oyuncu 1 (X) oyna</div>
+
+            <div class="status" id="status"></div>
+
+            <div class="board" id="board"></div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="resetXOX()">Yeni Oyun</button>
+                <button class="btn back-btn" onclick="backToMenu()">Geri Dön</button>
+            </div>
+        </div>
+
+        <!-- Taş Kağıt Makas -->
+        <div class="game-section" id="rpsGame">
+            <div class="rps-scores">
+                <div class="rps-score-item">
+                    <h3>Oyuncu 1</h3>
+                    <div class="score" id="rpsPlayer1Score">0</div>
+                </div>
+                <div class="rps-score-item">
+                    <h3>Oyuncu 2</h3>
+                    <div class="score" id="rpsPlayer2Score">0</div>
+                </div>
+            </div>
+
+            <div class="rps-turn" id="rpsTurn">Oyuncu 1 seçim yap</div>
+
+            <div id="rpsPlayer1Selection" style="text-align: center; margin: 20px 0;">
+                <p style="color: #666; margin-bottom: 10px;">Oyuncu 1 seçimi:</p>
+                <div class="rps-buttons">
+                    <button class="rps-btn" onclick="selectRPS('player1', 'taş')">🪨</button>
+                    <button class="rps-btn" onclick="selectRPS('player1', 'kağıt')">📄</button>
+                    <button class="rps-btn" onclick="selectRPS('player1', 'makas')">✂️</button>
+                </div>
+            </div>
+
+            <div id="rpsPlayer2Selection" style="text-align: center; margin: 20px 0; display: none;">
+                <p style="color: #666; margin-bottom: 10px;">Oyuncu 2 seçimi:</p>
+                <div class="rps-buttons">
+                    <button class="rps-btn" onclick="selectRPS('player2', 'taş')">🪨</button>
+                    <button class="rps-btn" onclick="selectRPS('player2', 'kağıt')">📄</button>
+                    <button class="rps-btn" onclick="selectRPS('player2', 'makas')">✂️</button>
+                </div>
+            </div>
+
+            <div class="rps-result" id="rpsResult" style="display: none;">
+                <div class="rps-result-text" id="rpsResultText"></div>
+                <div class="rps-choices" id="rpsChoices"></div>
+                <button class="btn confirm-btn" onclick="nextRpsRound()">Devam Et</button>
+            </div>
+
+            <div class="button-group">
+                <button class="btn reset-btn" onclick="resetRPS()">Puanları Sıfırla</button>
+                <button class="btn back-btn" onclick="backToMenu()">Geri Dön</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // XOX Oyunu
+        let xoxBoard = ['', '', '', '', '', '', '', '', ''];
+        let xoxCurrentPlayer = 'X';
+        let xoxPlayer1Score = 0;
+        let xoxPlayer2Score = 0;
+        let xoxGameActive = true;
+
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        function initXOX() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.onclick = () => playXOX(i);
+                cell.textContent = xoxBoard[i];
+                board.appendChild(cell);
+            }
+            updateXOXDisplay();
+        }
+
+        function playXOX(index) {
+            if (!xoxGameActive || xoxBoard[index] !== '') return;
+
+            xoxBoard[index] = xoxCurrentPlayer;
+            
+            if (checkXOXWinner()) {
+                document.getElementById('status').textContent = `🎉 Oyuncu ${xoxCurrentPlayer === 'X' ? '1' : '2'} Kazandı!`;
+                if (xoxCurrentPlayer === 'X') xoxPlayer1Score++;
+                else xoxPlayer2Score++;
+                xoxGameActive = false;
+                updateXOXDisplay();
+                initXOX();
+                return;
+            }
+
+            if (xoxBoard.every(cell => cell !== '')) {
+                document.getElementById('status').textContent = '🤝 Berabere!';
+                xoxGameActive = false;
+                initXOX();
+                return;
+            }
+
+            xoxCurrentPlayer = xoxCurrentPlayer === 'X' ? 'O' : 'X';
+            updateXOXDisplay();
+            initXOX();
+        }
+
+        function checkXOXWinner() {
+            for (let condition of winningConditions) {
+                const [a, b, c] = condition;
+                if (xoxBoard[a] === xoxBoard[b] && xoxBoard[b] === xoxBoard[c] && xoxBoard[a] !== '') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function updateXOXDisplay() {
+            document.getElementById('player1Score').textContent = xoxPlayer1Score;
+            document.getElementById('player2Score').textContent = xoxPlayer2Score;
+            document.getElementById('currentPlayer').textContent = xoxGameActive ? 
+                `Oyuncu ${xoxCurrentPlayer === 'X' ? '1' : '2'} (${xoxCurrentPlayer}) oyna` : '';
+        }
+
+        function resetXOX() {
+            xoxBoard = ['', '', '', '', '', '', '', '', ''];
+            xoxCurrentPlayer = 'X';
+            xoxGameActive = true;
+            document.getElementById('status').textContent = '';
+            initXOX();
+        }
+
+        // Taş Kağıt Makas
+        let rpsPlayer1Score = 0;
+        let rpsPlayer2Score = 0;
+        let rpsPlayer1Choice = null;
+        let rpsPlayer2Choice = null;
+
+        function selectRPS(player, choice) {
+            if (player === 'player1') {
+                rpsPlayer1Choice = choice;
+                document.getElementById('rpsPlayer1Selection').style.display = 'none';
+                document.getElementById('rpsPlayer2Selection').style.display = 'block';
+                document.getElementById('rpsTurn').textContent = 'Oyuncu 2 seçim yap';
+            } else {
+                rpsPlayer2Choice = choice;
+                playRPS();
+            }
+        }
+
+        function playRPS() {
+            const emojis = { 'taş': '🪨', 'kağıt': '📄', 'makas': '✂️' };
+            const result = document.getElementById('rpsResult');
+            const resultText = document.getElementById('rpsResultText');
+            const choices = document.getElementById('rpsChoices');
+
+            let outcome = '';
+            let winner = null;
+
+            if (rpsPlayer1Choice === rpsPlayer2Choice) {
+                outcome = 'Berabere!';
+            } else if (
+                (rpsPlayer1Choice === 'taş' && rpsPlayer2Choice === 'makas') ||
+                (rpsPlayer1Choice === 'kağıt' && rpsPlayer2Choice === 'taş') ||
+                (rpsPlayer1Choice === 'makas' && rpsPlayer2Choice === 'kağıt')
+            ) {
+                outcome = 'Oyuncu 1 Kazandı! 🎉';
+                rpsPlayer1Score++;
+                winner = 'player1';
+            } else {
+                outcome = 'Oyuncu 2 Kazandı! 🎉';
+                rpsPlayer2Score++;
+                winner = 'player2';
+            }
+
+            resultText.textContent = outcome;
+            choices.textContent = `${emojis[rpsPlayer1Choice]} vs ${emojis[rpsPlayer2Choice]}`;
+            
+            document.getElementById('rpsPlayer1Score').textContent = rpsPlayer1Score;
+            document.getElementById('rpsPlayer2Score').textContent = rpsPlayer2Score;
+
+            result.style.display = 'flex';
+        }
+
+        function nextRpsRound() {
+            rpsPlayer1Choice = null;
+            rpsPlayer2Choice = null;
+            document.getElementById('rpsResult').style.display = 'none';
+            document.getElementById('rpsPlayer1Selection').style.display = 'block';
+            document.getElementById('rpsPlayer2Selection').style.display = 'none';
+            document.getElementById('rpsTurn').textContent = 'Oyuncu 1 seçim yap';
+        }
+
+        function resetRPS() {
+            rpsPlayer1Score = 0;
+            rpsPlayer2Score = 0;
+            rpsPlayer1Choice = null;
+            rpsPlayer2Choice = null;
+            document.getElementById('rpsPlayer1Score').textContent = '0';
+            document.getElementById('rpsPlayer2Score').textContent = '0';
+            document.getElementById('rpsResult').style.display = 'none';
+            document.getElementById('rpsPlayer1Selection').style.display = 'block';
+            document.getElementById('rpsPlayer2Selection').style.display = 'none';
+            document.getElementById('rpsTurn').textContent = 'Oyuncu 1 seçim yap';
+        }
+
+        // Menü
+        function startGame(game) {
+            document.getElementById('menu').classList.add('hidden');
+            if (game === 'xox') {
+                document.getElementById('xoxGame').classList.add('active');
+                resetXOX();
+            } else if (game === 'rps') {
+                document.getElementById('rpsGame').classList.add('active');
+                resetRPS();
+            }
+        }
+
+        function backToMenu() {
+            document.getElementById('menu').classList.remove('hidden');
+            document.getElementById('xoxGame').classList.remove('active');
+            document.getElementById('rpsGame').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
