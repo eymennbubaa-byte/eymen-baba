@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6 Oyun - 2 Oyuncu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .menu.hidden {
+            display: none;
+        }
+
+        .game-section {
+            display: none;
+        }
+
+        .game-section.active {
+            display: block;
+        }
+
+        .game-btn {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .current-player {
+            background: #e8eef7;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .scores {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .score-item h3 {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .score-item .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .cell:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .cell.x { color: #667eea; }
+        .cell.o { color: #764ba2; }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: #999;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            min-height: 25px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .memory-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .memory-card.flipped {
+            background: white;
+            color: #333;
+            border: 2px solid #667eea;
+        }
+
+        .math-problem {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .math-problem .question {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 6 Oyun</h1>
+            <p>2 Oyuncu - Sırayla Oynayın</p>
+        </div>
+
+        <div class="content">
+            <!-- MENU -->
+            <div class="menu" id="menu">
+                <button class="game-btn" onclick="startGame('xox')">⭕ XOX</button>
+                <button class="game-btn" onclick="startGame('rps')">✋ Taş Kağıt</button>
+                <button class="game-btn" onclick="startGame('number')">🔢 Sayı Tahmin</button>
+                <button class="game-btn" onclick="startGame('memory')">🧠 Hafıza</button>
+                <button class="game-btn" onclick="startGame('math')">➕ Matematik</button>
+                <button class="game-btn" onclick="startGame('quick')">⚡ Reaksiyon</button>
+            </div>
+
+            <!-- XOX -->
+            <div class="game-section" id="xoxGame">
+                <div class="scores">
+                    <div class="score-item"><h3>Oyuncu 1</h3><div class="score" id="xoxScore1">0</div></div>
+                    <div class="score-item"><h3>Oyuncu 2</h3><div class="score" id="xoxScore2">0</div></div>
+                </div>
+                <div class="current-player" id="xoxPlayer">Oyuncu 1 oyna</div>
+                <div class="status" id="xoxStatus"></div>
+                <div class="board" id="xoxBoard"></div>
+                <button class="btn" onclick="resetXOX()">Yeni Oyun</button>
+                <button class="btn btn-back" onclick="backToMenu()">Geri Dön</button>
+            </div>
+
+            <!-- RPS -->
+            <div class="game-section" id="rpsGame">
+                <div class="scores">
+                    <div class="score-item"><h3>Oyuncu 1</h3><div class="score" id="rpsScore1">0</div></div>
+                    <div class="score-item"><h3>Oyuncu 2</h3><div class="score" id="rpsScore2">0</div></div>
+                </div>
+                <div class="current-player" id="rpsPlayer">Oyuncu 1 seçim yap</div>
+                <div id="rpsP1" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn" onclick="selectRPS(1, 'taş')" style="flex: 1;">🪨</button>
+                    <button class="btn" onclick="selectRPS(1, 'kağıt')" style="flex: 1;">📄</button>
+                    <button class="btn" onclick="selectRPS(1, 'makas')" style="flex: 1;">✂️</button>
+                </div>
+                <div id="rpsP2" style="display: none; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn" onclick="selectRPS(2, 'taş')" style="flex: 1;">🪨</button>
+                    <button class="btn" onclick="selectRPS(2, 'kağıt')" style="flex: 1;">📄</button>
+                    <button class="btn" onclick="selectRPS(2, 'makas')" style="flex: 1;">✂️</button>
+                </div>
+                <div class="status" id="rpsResult"></div>
+                <button class="btn" onclick="resetRPS()">Puanları Sıfırla</button>
+                <button class="btn btn-back" onclick="backToMenu()">Geri Dön</button>
+            </div>
+
+            <!-- SAYI TAHMIN -->
+            <div class="game-section" id="numberGame">
+                <div class="scores">
+                    <div class="score-item"><h3>Oyuncu 1</h3><div class="score" id="numScore1">0</div></div>
+                    <div class="score-item"><h3>Oyuncu 2</h3><div class="score" id="numScore2">0</div></div>
+                </div>
+                <div id="numPhase1">
+                    <div class="current-player">Oyuncu 1 sayı tut (1-100)</div>
+                    <input type="number" id="numInput" class="input-field" placeholder="Sayıyı girin (1-100)" min="1" max="100">
+                    <button class="btn" onclick="submitNumber()">Sayı Tutuldu</button>
+                </div>
+                <div id="numPhase2" style="display: none;">
+                    <div class="current-player">Oyuncu 2 tahmin et</div>
+                    <input type="number" id="guessInput" class="input-field" placeholder="Tahmininizi girin">
+                    <button class="btn" onclick="guessNumber()">Tahmin Et</button>
+                </div>
+                <div class="feedback" id="numFeedback"></div>
+                <button class="btn" onclick="resetNumber()">Yeni Tur</button>
+                <button class="btn btn-back" onclick="backToMenu()">Geri Dön</button>
+            </div>
+
+            <!-- HAFIZA -->
+            <div class="game-section" id="memoryGame">
+                <div class="scores">
+                    <div class="score-item"><h3>Oyuncu 1</h3><div class="score" id="memScore1">0</div></div>
+                    <div class="score-item"><h3>Oyuncu 2</h3><div class="score" id="memScore2">0</div></div>
+                </div>
+                <div class="current-player" id="memPlayer">Oyuncu 1 kartları aç</div>
+                <div class="memory-cards" id="memoryCards"></div>
+                <div class="feedback" id="memFeedback"></div>
+                <button class="btn" onclick="resetMemory()">Yeni Oyun</button>
+                <button class="btn btn-back" onclick="backToMenu()">Geri Dön</button>
+            </div>
+
+            <!-- MATEMATIK -->
+            <div class="game-section" id="mathGame">
+                <div class="scores">
+                    <div class="score-item"><h3>Oyuncu 1</h3><div class="score" id="mathScore1">0</div></div>
+                    <div class="score-item"><h3>Oyuncu 2</h3><div class="score" id="mathScore2">0</div></div>
+                </div>
+                <div class="current-player" id="mathPlayer">Oyuncu 1 çöz</div>
+                <div class="math-problem">
+                    <div class="question" id="mathQuestion">5 + 3 = ?</div>
+                </div>
+                <input type="number" id="mathInput" class="input-field" placeholder="Cevabı girin">
+                <button class="btn" onclick="submitMath()">Cevap Ver</button>
+                <div class="feedback" id="mathFeedback"></div>
+                <button class="btn" onclick="resetMath()">Puanları Sıfırla</button>
+                <button class="btn btn-back" onclick="backToMenu()">Geri Dön</button>
+            </div>
+
+            <!-- REAKSIYON -->
+            <div class="game-section" id="quickGame">
+                <div class="scores">
+                    <div class="score-item"><h3>Oyuncu 1</h3><div class="score" id="quickScore1">0</div></div>
+                    <div class="score-item"><h3>Oyuncu 2</h3><div class="score" id="quickScore2">0</div></div>
+                </div>
+                <div class="current-player" id="quickPlayer">Oyuncu 1 başla</div>
+                <div style="display: flex; gap: 10px; height: 180px; margin: 20px 0;">
+                    <button id="redBtn" class="btn" style="background: #ff4444; flex: 1; font-size: 32px;">🔴</button>
+                    <button id="blueBtn" class="btn" style="background: #4444ff; flex: 1; font-size: 32px;">🔵</button>
+                </div>
+                <div class="feedback" id="quickFeedback"></div>
+                <button class="btn" onclick="resetQuick()">Puanları Sıfırla</button>
+                <button class="btn btn-back" onclick="backToMenu()">Geri Dön</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startGame(g) {
+            document.getElementById('menu').classList.add('hidden');
+            document.querySelectorAll('.game-section').forEach(e => e.classList.remove('active'));
+            document.getElementById(g + 'Game').classList.add('active');
+            if (g === 'xox') resetXOX();
+            else if (g === 'rps') resetRPS();
+            else if (g === 'number') resetNumber();
+            else if (g === 'memory') resetMemory();
+            else if (g === 'math') resetMath();
+            else if (g === 'quick') resetQuick();
+        }
+
+        function backToMenu() {
+            document.getElementById('menu').classList.remove('hidden');
+            document.querySelectorAll('.game-section').forEach(e => e.classList.remove('active'));
+        }
+
+        // XOX
+        let xoxB = ['','','','','','','','',''], xoxP = 'X', xs1=0, xs2=0, xoxA=true;
+        const wc = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        function initXOX() {
+            let b = document.getElementById('xoxBoard');
+            b.innerHTML = '';
+            for (let i=0; i<9; i++) {
+                let c = document.createElement('div');
+                c.className = 'cell ' + (xoxB[i] ? xoxB[i].toLowerCase() : '');
+                c.textContent = xoxB[i];
+                c.onclick = ()=>playXOX(i);
+                b.appendChild(c);
+            }
+            document.getElementById('xoxPlayer').textContent = `Oyuncu ${xoxP==='X'?'1':'2'} (${xoxP}) oyna`;
+            document.getElementById('xoxScore1').textContent = xs1;
+            document.getElementById('xoxScore2').textContent = xs2;
+        }
+        function playXOX(i) {
+            if (!xoxA || xoxB[i]) return;
+            xoxB[i] = xoxP;
+            for (let cond of wc) {
+                if (xoxB[cond[0]] && xoxB[cond[0]]===xoxB[cond[1]] && xoxB[cond[1]]===xoxB[cond[2]]) {
+                    xoxP==='X' ? xs1++ : xs2++;
+                    document.getElementById('xoxStatus').textContent = `🎉 Oyuncu ${xoxP==='X'?'1':'2'} Kazandı!`;
+                    xoxA=false;
+                    setTimeout(()=>{xoxB=['','','','','','','','',''];xoxP='X';xoxA=true;document.getElementById('xoxStatus').textContent='';initXOX();},2000);
+                    return;
+                }
+            }
+            if (xoxB.every(c=>c)) {
+                document.getElementById('xoxStatus').textContent='🤝 Berabere!';
+                xoxA=false;
+                setTimeout(()=>{xoxB=['','','','','','','','',''];xoxP='X';xoxA=true;document.getElementById('xoxStatus').textContent='';initXOX();},2000);
+                return;
+            }
+            xoxP = xoxP==='X'?'O':'X';
+            initXOX();
+        }
+        function resetXOX() {xoxB=['','','','','','','','',''];xoxP='X';xs1=xs2=0;xoxA=true;document.getElementById('xoxStatus').textContent='';initXOX();}
+
+        // RPS
+        let rp1=null, rp2=null, rs1=0, rs2=0;
+        function selectRPS(p, c) {
+            if (p===1) {
+                rp1=c;
+                document.getElementById('rpsP1').style.display='none';
+                document.getElementById('rpsP2').style.display='flex';
+                document.getElementById('rpsPlayer').textContent='Oyuncu 2 seçim yap';
+            } else {
+                rp2=c;
+                playRPS();
+            }
+        }
+        function playRPS() {
+            let r='';
+            if (rp1===rp2) r='🤝 Berabere!';
+            else if ((rp1==='taş'&&rp2==='makas')||(rp1==='kağıt'&&rp2==='taş')||(rp1==='makas'&&rp2==='kağıt')) {
+                r='🎉 Oyuncu 1 Kazandı!';
+                rs1++;
+            } else {
+                r='🎉 Oyuncu 2 Kazandı!';
+                rs2++;
+            }
+            let e={'taş':'🪨','kağıt':'📄','makas':'✂️'};
+            document.getElementById('rpsResult').textContent=`${e[rp1]} vs ${e[rp2]}\n${r}`;
+            document.getElementById('rpsScore1').textContent=rs1;
+            document.getElementById('rpsScore2').textContent=rs2;
+            setTimeout(()=>{
+                rp1=rp2=null;
+                document.getElementById('rpsResult').textContent='';
+                document.getElementById('rpsP1').style.display='flex';
+                document.getElementById('rpsP2').style.display='none';
+                document.getElementById('rpsPlayer').textContent='Oyuncu 1 seçim yap';
+            },2000);
+        }
+        function resetRPS() {
+            rs1=rs2=0;rp1=rp2=null;
+            document.getElementById('rpsScore1').textContent='0';
+            document.getElementById('rpsScore2').textContent='0';
+            document.getElementById('rpsResult').textContent='';
+            document.getElementById('rpsP1').style.display='flex';
+            document.getElementById('rpsP2').style.display='none';
+            document.getElementById('rpsPlayer').textContent='Oyuncu 1 seçim yap';
+        }
+
+        // SAYI TAHMIN
+        let ns=0, nt=0, ns1=0, ns2=0;
+        function submitNumber() {
+            let v=parseInt(document.getElementById('numInput').value);
+            if (v<1||v>100) {alert('1-100!');return;}
+            ns=v;
+            document.getElementById('numPhase1').style.display='none';
+            document.getElementById('numPhase2').style.display='block';
+            nt=0;
+        }
+        function guessNumber() {
+            let g=parseInt(document.getElementById('guessInput').value);
+            nt++;
+            let f='';
+            if (g===ns) {
+                f=`🎉 Doğru! ${nt} denemede!`;
+                ns2++;
+                setTimeout(()=>resetNumber(),2000);
+            } else if (g<ns) {
+                f='⬆️ Daha büyük!';
+            } else {
+                f='⬇️ Daha küçük!';
+            }
+            document.getElementById('numFeedback').textContent=f;
+            document.getElementById('numScore1').textContent=ns1;
+            document.getElementById('numScore2').textContent=ns2;
+        }
+        function resetNumber() {
+            document.getElementById('numPhase1').style.display='block';
+            document.getElementById('numPhase2').style.display='none';
+            document.getElementById('numInput').value='';
+            document.getElementById('guessInput').value='';
+            document.getElementById('numFeedback').textContent='';
+        }
+
+        // HAFIZA
+        let mc=[], mf=[], mm=0, ms1=0, ms2=0, mcp=1;
+        const emojis=['🍎','🍌','🍇','🍓','🍊','🍑','🍒','🥝'];
+        function initMemory() {
+            mc=[...emojis,...emojis].sort(()=>Math.random()-0.5);
+            mf=new Array(16).fill(false);
+            mm=0;
+            document.getElementById('memoryCards').innerHTML='';
+            for (let i=0;i<16;i++) {
+                let c=document.createElement('button');
+                c.className='memory-card';
+                c.textContent='?';
+                c.onclick=()=>flipMem(i);
+                document.getElementById('memoryCards').appendChild(c);
+            }
+        }
+        function flipMem(i) {
+            if (mf[i]) return;
+            mf[i]=true;
+            let cs=document.querySelectorAll('.memory-card');
+            cs[i].classList.add('flipped');
+            cs[i].textContent=mc[i];
+            let f=mf.map((x,j)=>x?j:-1).filter(x=>x!==-1);
+            if (f.length===2) {
+                if (mc[f[0]]===mc[f[1]]) {
+                    mm++;
+                    mcp===1?ms1++:ms2++;
+                    document.getElementById('memFeedback').textContent='✅ Eşleşti!';
+                    setTimeout(()=>{
+                        if (mm===8) {
+                            document.getElementById('memFeedback').textContent=`🎉 Oyuncu ${mcp} Kazandı!`;
+                            setTimeout(()=>resetMemory(),2000);
+                        }
+                        document.getElementById('memScore1').textContent=ms1;
+                        document.getElementById('memScore2').textContent=ms2;
+                    },500);
+                } else {
+                    setTimeout(()=>{
+                        mf[f[0]]=mf[f[1]]=false;
+                        cs[f[0]].classList.remove('flipped');
+                        cs[f[1]].classList.remove('flipped');
+                        cs[f[0]].textContent='?';
+                        cs[f[1]].textContent='?';
+                        mcp=mcp===1?2:1;
+                        document.getElementById('memPlayer').textContent=`Oyuncu ${mcp} kartları aç`;
+                        document.getElementById('memFeedback').textContent='';
+                    },1000);
+                }
+            }
+        }
+        function resetMemory() {
+            ms1=ms2=0;mcp=1;
+            document.getElementById('memScore1').textContent='0';
+            document.getElementById('memScore2').textContent='0';
+            document.getElementById('memFeedback').textContent='';
+            document.getElementById('memPlayer').textContent='Oyuncu 1 kartları aç';
+            initMemory();
+        }
+
+        // MATEMATIK
+        let mh1=0, mh2=0, mhcp=1, cm={};
+        function genMath() {
+            let ops=['+','-','*'], op=ops[Math.floor(Math.random()*3)], a=Math.floor(Math.random()*20)+1, b=Math.floor(Math.random()*20)+1;
+            let ans=op==='+'?a+b:op==='-'?a-b:a*b;
+            cm={q:`${a}${op}${b}`,a:ans};
+            document.getElementById('mathQuestion').textContent=cm.q+' = ?';
+        }
+        function submitMath() {
+            let ans=parseInt(document.getElementById('mathInput').value);
+            if (ans===cm.a) {
+                mhcp===1?mh1++:mh2++;
+                document.getElementById('mathFeedback').textContent='✅ Doğru!';
+            } else {
+                document.getElementById('mathFeedback').textContent=`❌ Yanlış! (${cm.a})`;
+            }
+            document.getElementById('mathScore1').textContent=mh1;
+            document.getElementById('mathScore2').textContent=mh2;
+            setTimeout(()=>{
+                mhcp=mhcp===1?2:1;
+                document.getElementById('mathPlayer').textContent=`Oyuncu ${mhcp} çöz`;
+                document.getElementById('mathInput').value='';
+                document.getElementById('mathFeedback').textContent='';
+                genMath();
+            },1500);
+        }
+        function resetMath() {
+            mh1=mh2=0;mhcp=1;
+            document.getElementById('mathScore1').textContent='0';
+            document.getElementById('mathScore2').textContent='0';
+            document.getElementById('mathInput').value='';
+            document.getElementById('mathFeedback').textContent='';
+            document.getElementById('mathPlayer').textContent='Oyuncu 1 çöz';
+            genMath();
+        }
+
+        // REAKSIYON
+        let qh1=0, qh2=0, qhcp=1, qhA=false, qhT=0;
+        document.addEventListener('DOMContentLoaded', ()=>{
+            document.getElementById('redBtn').onclick=()=>qClick();
+            document.getElementById('blueBtn').onclick=()=>qClick();
+        });
+        function startQuick() {
+            qhA=true;
+            qhT=Date.now();
+            document.getElementById('quickFeedback').textContent='Hazır...';
+            setTimeout(()=>{
+                document.getElementById('quickFeedback').textContent='TIK!';
+            },1000+Math.random()*2000);
+        }
+        function qClick() {
+            if (!qhA) {
+                startQuick();
+                return;
+            }
+            let t=Date.now()-qhT-3000;
+            if (t>0) {
+                qhcp===1?qh1++:qh2++;
+                document.getElementById('quickScore1').textContent=qh1;
+                document.getElementById('quickScore2').textContent=qh2;
+                document.getElementById('quickFeedback').textContent=`⚡ ${t}ms!`;
+                qhcp=qhcp===1?2:1;
+                qhA=false;
+                setTimeout(()=>{
+                    document.getElementById('quickPlayer').textContent=`Oyuncu ${qhcp} başla`;
+                    startQuick();
+                },1500);
+            }
+        }
+        function resetQuick() {
+            qh1=qh2=0;qhcp=1;qhA=false;
+            document.getElementById('quickScore1').textContent='0';
+            document.getElementById('quickScore2').textContent='0';
+            document.getElementById('quickFeedback').textContent='';
+            document.getElementById('quickPlayer').textContent='Oyuncu 1 başla';
+        }
+    </script>
+</body>
+</html>
